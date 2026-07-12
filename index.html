@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Boilerplate PWA</title>
+    <title>Mukisa Requester</title>
     <link rel="manifest" href="manifest.json">
     <style>
         /* Minimal, clean layout */
@@ -115,7 +115,7 @@
 <body>
 
     <header>
-        <h1>Data Engine Boilerplate</h1>
+        <h1>Mukisa Requester</h1>
         <div class="selector-container">
             <select id="categorySelect" class="category-select" onchange="switchCategory(this.value)">
                 <option value="colors">🎨 Colors</option>
@@ -132,7 +132,7 @@
     </main>
 
     <footer>
-        App Version: v2.2-Canvas-Test
+        App Version: v1.0-Beta
     </footer>
 
     <script>
@@ -243,12 +243,12 @@
         // Dynamic Namespace Isolation Block
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
-                // Dynamically computes the explicit subfolder namespace (e.g., "/Boilerplate/")
+                // Dynamically computes the explicit subfolder namespace (e.g., "/Mukisa-Requester/")
                 const dynamicScope = window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/') + 1);
 
                 navigator.serviceWorker.register('./sw.js', { scope: dynamicScope })
-                    .then((reg) => console.log('Boilerplate Service Worker registered with scope:', reg.scope))
-                    .catch((err) => console.log('Boilerplate Service Worker registration failed:', err));
+                    .then((reg) => console.log('Service Worker registered with scope:', reg.scope))
+                    .catch((err) => console.log('Service Worker registration failed:', err));
             });
         }
     </script>
