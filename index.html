@@ -17,7 +17,7 @@
         body {
             background-color: #ffffff;
             color: #1e293b;
-            padding: 20px 15px 160px 15px; /* Extra bottom padding so content isn't hidden behind the sticky footer */
+            padding: 20px 15px 160px 15px; /* Extra bottom padding so content isn't hidden behind sticky footer */
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -69,7 +69,7 @@
 
         .data-item-details {
             flex-grow: 1;
-            padding-right: 15px;
+            padding-right: 10px;
         }
 
         .data-item-name {
@@ -92,13 +92,22 @@
             margin-left: 4px;
         }
 
-        /* Quantity Controls */
+        /* Group wrapper for quantity controls and dynamic unit layout */
+        .quantity-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 4px;
+            min-width: 130px;
+        }
+
         .quantity-controls {
             display: flex;
             align-items: center;
             background: #e2e8f0;
             border-radius: 8px;
             padding: 2px;
+            width: 100%;
         }
 
         .qty-btn {
@@ -122,7 +131,8 @@
         }
 
         .qty-input {
-            width: 45px;
+            width: 100%;
+            flex-grow: 1;
             text-align: center;
             border: none;
             background: transparent;
@@ -137,6 +147,14 @@
         .qty-input::-webkit-inner-spin-button {
             -webkit-appearance: none;
             margin: 0;
+        }
+
+        .item-dynamic-unit {
+            font-size: 0.8rem;
+            font-weight: 700;
+            text-transform: lowercase;
+            color: #64748b;
+            padding-right: 6px;
         }
 
         .status-message {
@@ -248,11 +266,11 @@
             </div>
             <button class="whatsapp-btn" onclick="sendWhatsAppReport()">
                 <svg class="whatsapp-icon" viewBox="0 0 24 24">
-                    <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946C.06 5.348 5.4.01 12.008.01c3.202.001 6.212 1.246 8.477 3.514 2.266 2.268 3.507 5.28 3.505 8.484-.004 6.657-5.34 11.997-11.953 11.997-2.005-.001-3.973-.502-5.713-1.457L0 24zm6.59-4.846c1.6.95 3.488 1.449 5.412 1.451 5.428 0 9.845-4.415 9.848-9.845.002-2.63-1.023-5.101-2.883-6.963C17.164 1.94 14.69 .916 12.053.916c-5.432 0-9.851 4.415-9.854 9.846-.001 1.995.521 3.945 1.512 5.669l-.952 3.476 3.56-.934zm10.933-4.51c-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.668.149-.198.297-.767.966-.94 1.164-.173.199-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.174.2-.298.3-.496.099-.198.05-.372-.025-.521-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414-.074-.124-.272-.198-.57-.347z"/>
+                    <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946C.06 5.348 5.4.01 12.008.01c3.202.001 6.212 1.246 8.477 3.514 2.266 2.268 3.507 5.28 3.505 8.484-.004 6.657-5.34 11.997-11.953 11.997-2.005-.001-3.973-.502-5.713-1.457L0 24zm6.59-4.846c1.6.95 3.488 1.449 5.412 1.451 5.428 0 9.845-4.415 9.848-9.845.002-2.63-1.023-5.101-2.883-6.963C17.164 1.94 14.69 .916 12.053.916c-5.432 0-9.851 4.415-9.854 9.846-.001 1.995.521 3.476 1.512 5.669l-.952 3.476 3.56-.934zm10.933-4.51c-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.668.149-.198.297-.767.966-.94 1.164-.173.199-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.174.2-.298.3-.496.099-.198.05-.372-.025-.521-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414-.074-.124-.272-.198-.57-.347z"/>
                 </svg>
                 Send Report to Supplier (WhatsApp)
             </button>
-            <div class="version-badge">App Version: v1.1-Live</div>
+            <div class="version-badge">App Version: v1.2-LabeledUnits</div>
         </div>
     </div>
 
@@ -302,6 +320,9 @@
                 const rawPrice = columns[1].replace(/^"|"$/g, '').trim();
                 const clarifier = columns[2] ? columns[2].replace(/^"|"$/g, '').trim() : '';
                 
+                // Read Column 4 as the structural Unit text string. Fall back to empty safely.
+                const dynamicUnit = columns[3] ? columns[3].replace(/^"|"$/g, '').trim() : '';
+                
                 // Skip header row if matches exactly
                 if (productName.toLowerCase() === 'product name' || productName.toLowerCase() === 'product') continue;
                 
@@ -310,7 +331,8 @@
                 masterDatabase.push({ 
                     name: productName, 
                     price: priceNum, 
-                    clarifier: clarifier 
+                    clarifier: clarifier,
+                    unit: dynamicUnit
                 });
             }
             
@@ -327,7 +349,6 @@
             }
             
             masterDatabase.forEach((item, index) => {
-                // Initialize quantity tracking if not set
                 if (orderQuantities[index] === undefined) {
                     orderQuantities[index] = 0;
                 }
@@ -341,10 +362,13 @@
                         <span class="data-item-price">${item.price.toLocaleString()} UGX</span>
                         <span class="data-item-clarifier">${item.clarifier}</span>
                     </div>
-                    <div class="quantity-controls">
-                        <button class="qty-btn" onclick="adjustQty(${index}, -1)">−</button>
-                        <input type="number" id="qty-${index}" class="qty-input" value="${orderQuantities[index]}" min="0" onchange="updateQtyField(${index}, this.value)">
-                        <button class="qty-btn" onclick="adjustQty(${index}, 1)">+</button>
+                    <div class="quantity-wrapper">
+                        <div class="quantity-controls">
+                            <button class="qty-btn" onclick="adjustQty(${index}, -1)">−</button>
+                            <input type="number" id="qty-${index}" class="qty-input" value="${orderQuantities[index]}" min="0" onchange="updateQtyField(${index}, this.value)">
+                            <button class="qty-btn" onclick="adjustQty(${index}, 1)">+</button>
+                        </div>
+                        <span class="item-dynamic-unit">${item.unit}</span>
                     </div>
                 `;
                 
@@ -393,7 +417,10 @@
                     hasItems = true;
                     const lineCost = item.price * qty;
                     runningTotal += lineCost;
-                    reportLines.push(`• *${item.name}*: ${qty} [${item.clarifier}]`);
+                    
+                    // Appends unit descriptor string cleanly directly to the calculated quantity
+                    const unitLabel = item.unit ? ` ${item.unit}` : "";
+                    reportLines.push(`• *${item.name}* [${item.clarifier}]: ${qty}${unitLabel} — ${lineCost.toLocaleString()} UGX`);
                 }
             });
 
@@ -412,7 +439,6 @@
 
         window.addEventListener('DOMContentLoaded', loadMasterData);
 
-        // Dynamic Namespace Isolation Block preserved safely
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
                 const dynamicScope = window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/') + 1);
