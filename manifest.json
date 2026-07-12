@@ -1,9 +1,9 @@
 {
-  "name": "Boilerplate App Template",
-  "short_name": "Boilerplate",
+  "name": "Mukisa Requester",
+  "short_name": "Mukisa",
   "start_url": "./index.html",
   "display": "standalone",
-  "background_color": "#f4f6f9",
-  "theme_color": "#1e3a8a",
+  "background_color": "#ffffff",
+  "theme_color": "#1e293b",
   "orientation": "portrait"
 }
