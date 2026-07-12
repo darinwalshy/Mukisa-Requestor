@@ -6,7 +6,7 @@
     <title>Mukisa Requester</title>
     <link rel="manifest" href="manifest.json">
     <style>
-        /* Minimal, clean layout */
+        /* Minimal, clean layout optimized for mobile */
         * {
             box-sizing: border-box;
             margin: 0;
@@ -17,7 +17,7 @@
         body {
             background-color: #ffffff;
             color: #1e293b;
-            padding: 40px 20px;
+            padding: 20px 15px 160px 15px; /* Extra bottom padding so content isn't hidden behind the sticky footer */
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -27,29 +27,20 @@
         header {
             width: 100%;
             max-width: 600px;
-            margin-bottom: 30px;
+            margin-bottom: 20px;
+            text-align: center;
         }
 
         h1 {
             font-size: 1.8rem;
             font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .subtitle {
+            font-size: 0.95rem;
+            color: #64748b;
             margin-bottom: 15px;
-        }
-
-        .selector-container {
-            width: 100%;
-        }
-
-        .category-select {
-            width: 100%;
-            padding: 12px;
-            font-size: 1rem;
-            border-radius: 8px;
-            border: 1px solid #cbd5e1;
-            background-color: #f8fafc;
-            color: #0f172a;
-            cursor: pointer;
-            outline: none;
         }
 
         main {
@@ -58,57 +49,180 @@
             flex-grow: 1;
         }
 
-        .category-title {
-            font-size: 1.4rem;
-            font-weight: 600;
-            margin-bottom: 20px;
-            text-transform: capitalize;
-            border-bottom: 2px solid #e2e8f0;
-            padding-bottom: 8px;
-        }
-
         /* Clean data list canvas */
         .data-list {
             display: flex;
             flex-direction: column;
-            gap: 16px;
+            gap: 12px;
         }
 
         .data-item {
             background-color: #f8fafc;
             border: 1px solid #e2e8f0;
-            border-radius: 8px;
+            border-radius: 12px;
             padding: 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.02);
         }
 
-        .data-item-front {
+        .data-item-details {
+            flex-grow: 1;
+            padding-right: 15px;
+        }
+
+        .data-item-name {
+            font-size: 1.15rem;
+            font-weight: 600;
+            color: #0f172a;
+            margin-bottom: 2px;
+        }
+
+        .data-item-price {
+            font-size: 1rem;
+            font-weight: 700;
+            color: #16a34a;
+        }
+
+        .data-item-clarifier {
+            font-size: 0.85rem;
+            color: #64748b;
+            font-weight: 400;
+            margin-left: 4px;
+        }
+
+        /* Quantity Controls */
+        .quantity-controls {
+            display: flex;
+            align-items: center;
+            background: #e2e8f0;
+            border-radius: 8px;
+            padding: 2px;
+        }
+
+        .qty-btn {
+            background: #ffffff;
+            border: none;
+            width: 36px;
+            height: 36px;
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #0f172a;
+            cursor: pointer;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+        }
+
+        .qty-btn:active {
+            background: #f1f5f9;
+        }
+
+        .qty-input {
+            width: 45px;
+            text-align: center;
+            border: none;
+            background: transparent;
             font-size: 1.1rem;
             font-weight: 600;
             color: #0f172a;
-            margin-bottom: 4px;
+            outline: none;
+            -moz-appearance: textfield;
         }
 
-        .data-item-back {
-            font-size: 0.95rem;
-            color: #475569;
+        .qty-input::-webkit-outer-spin-button,
+        .qty-input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
         }
 
         .status-message {
             font-style: italic;
             color: #64748b;
+            text-align: center;
+            margin-top: 20px;
         }
 
-        /* Minimal Version Badge */
-        footer {
+        /* Sticky Bottom Action Panel */
+        .sticky-footer {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background-color: #1e293b;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            box-shadow: 0 -4px 10px rgba(0, 0, 0, 0.15);
+            z-index: 1000;
+        }
+
+        .footer-content-wrapper {
             width: 100%;
             max-width: 600px;
-            text-align: center;
-            margin-top: 40px;
-            padding-top: 20px;
-            border-top: 1px solid #f1f5f9;
-            font-size: 0.85rem;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .total-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: #ffffff;
+            width: 100%;
+            padding: 4px 5px;
+        }
+
+        .total-label {
+            font-size: 1.1rem;
+            font-weight: 600;
             color: #94a3b8;
-            font-weight: 500;
+        }
+
+        .total-amount {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: #4ade80;
+        }
+
+        .whatsapp-btn {
+            width: 100%;
+            background-color: #16a34a;
+            color: #ffffff;
+            border: none;
+            border-radius: 10px;
+            padding: 14px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            transition: background-color 0.2s;
+        }
+
+        .whatsapp-btn:active {
+            background-color: #15803d;
+        }
+
+        .whatsapp-icon {
+            width: 20px;
+            height: 20px;
+            fill: currentColor;
+        }
+
+        .version-badge {
+            font-size: 0.75rem;
+            color: #64748b;
+            text-align: center;
+            margin-top: 5px;
         }
     </style>
 </head>
@@ -116,50 +230,56 @@
 
     <header>
         <h1>Mukisa Requester</h1>
-        <div class="selector-container">
-            <select id="categorySelect" class="category-select" onchange="switchCategory(this.value)">
-                <option value="colors">🎨 Colors</option>
-                <option value="shapes">📐 Shapes</option>
-            </select>
-        </div>
+        <p class="subtitle">Log active requests from caregivers. Data syncs when online.</p>
     </header>
 
     <main>
-        <h2 id="categoryTitle" class="category-title">Loading...</h2>
         <div id="dataDisplayCanvas" class="data-list">
             <p class="status-message">Connecting to data stream...</p>
         </div>
     </main>
 
-    <footer>
-        App Version: v1.0-Beta
-    </footer>
+    <!-- Sticky Bottom Action Panel -->
+    <div class="sticky-footer">
+        <div class="footer-content-wrapper">
+            <div class="total-container">
+                <span class="total-label">Grand Total:</span>
+                <span id="grandTotalDisplay" class="total-amount">0 UGX</span>
+            </div>
+            <button class="whatsapp-btn" onclick="sendWhatsAppReport()">
+                <svg class="whatsapp-icon" viewBox="0 0 24 24">
+                    <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946C.06 5.348 5.4.01 12.008.01c3.202.001 6.212 1.246 8.477 3.514 2.266 2.268 3.507 5.28 3.505 8.484-.004 6.657-5.34 11.997-11.953 11.997-2.005-.001-3.973-.502-5.713-1.457L0 24zm6.59-4.846c1.6.95 3.488 1.449 5.412 1.451 5.428 0 9.845-4.415 9.848-9.845.002-2.63-1.023-5.101-2.883-6.963C17.164 1.94 14.69 .916 12.053.916c-5.432 0-9.851 4.415-9.854 9.846-.001 1.995.521 3.945 1.512 5.669l-.952 3.476 3.56-.934zm10.933-4.51c-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.668.149-.198.297-.767.966-.94 1.164-.173.199-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.174.2-.298.3-.496.099-.198.05-.372-.025-.521-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414-.074-.124-.272-.198-.57-.347z"/>
+                </svg>
+                Send Report to Supplier (WhatsApp)
+            </button>
+            <div class="version-badge">App Version: v1.1-Live</div>
+        </div>
+    </div>
 
     <script>
-        let masterDatabase = {};
+        let masterDatabase = [];
+        let orderQuantities = {}; // Tracks { itemIndex: quantity }
 
-        const categorySelect = document.getElementById('categorySelect');
-        const categoryTitle = document.getElementById('categoryTitle');
         const dataDisplayCanvas = document.getElementById('dataDisplayCanvas');
+        const grandTotalDisplay = document.getElementById('grandTotalDisplay');
 
         async function loadMasterData() {
-            let rawText = "";
             try {
                 const cloudUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTHfrlPUELe3jPBi8Z4NK61zLn95lBR_b3uYPzvHnS6twmbYPkMzLcazF6KH9sTntzqyAP2ldxxzC5j/pub?output=csv';
                 
                 const response = await fetch(`${cloudUrl}&t=${new Date().getTime()}`);
                 if (!response.ok) throw new Error("Network response was not ok");
-                rawText = await response.text();
+                const rawText = await response.text();
                 
                 parseAndStoreCSV(rawText);
                 
             } catch (error) {
                 console.log("Cloud stream offline. Checking local container...", error);
-                const storedData = localStorage.getItem('framework_template_local_data');
+                const storedData = localStorage.getItem('mukisa_requester_local_data');
                 
                 if (storedData) {
                     masterDatabase = JSON.parse(storedData);
-                    instantiateCategorySelection();
+                    renderCanvas();
                 } else {
                     dataDisplayCanvas.innerHTML = `<p class="status-message">Offline: No cached data structures found.</p>`;
                 }
@@ -167,85 +287,135 @@
         }
 
         function parseAndStoreCSV(text) {
-            masterDatabase = {}; 
+            masterDatabase = []; 
             const rows = text.split(/[\r\n]+/);
             
             for (let i = 0; i < rows.length; i++) {
                 const currentRow = rows[i].trim();
                 if (!currentRow) continue; 
                 
+                // Regex handles commas safely inside quotes
                 const columns = currentRow.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
-                if (columns.length < 3) continue; 
+                if (columns.length < 2) continue; 
                 
-                const rawCategory = columns[0].replace(/^"|"$/g, '').trim(); 
-                const category = rawCategory.toLowerCase();
+                const productName = columns[0].replace(/^"|"$/g, '').trim(); 
+                const rawPrice = columns[1].replace(/^"|"$/g, '').trim();
+                const clarifier = columns[2] ? columns[2].replace(/^"|"$/g, '').trim() : '';
                 
-                const frontValue = columns[1].replace(/^"|"$/g, '').trim();
-                const backValue = columns[2].replace(/^"|"$/g, '').trim();
+                // Skip header row if matches exactly
+                if (productName.toLowerCase() === 'product name' || productName.toLowerCase() === 'product') continue;
                 
-                if (category === 'category') continue;
+                const priceNum = parseFloat(rawPrice.replace(/[^0-9.]/g, '')) || 0;
                 
-                if (!masterDatabase[category]) {
-                    masterDatabase[category] = [];
-                }
-                
-                masterDatabase[category].push({ 
-                    front: frontValue, 
-                    back: backValue 
+                masterDatabase.push({ 
+                    name: productName, 
+                    price: priceNum, 
+                    clarifier: clarifier 
                 });
             }
             
-            localStorage.setItem('framework_template_local_data', JSON.stringify(masterDatabase));
-            instantiateCategorySelection();
+            localStorage.setItem('mukisa_requester_local_data', JSON.stringify(masterDatabase));
+            renderCanvas();
         }
 
-        function instantiateCategorySelection() {
-            let currentSelection = categorySelect.value.toLowerCase();
-            if (masterDatabase[currentSelection]) {
-                switchCategory(currentSelection);
-            } else {
-                const fallback = Object.keys(masterDatabase)[0];
-                if (fallback) switchCategory(fallback);
-            }
-        }
-        
-        function switchCategory(categoryKey) {
-            const targetKey = categoryKey.toLowerCase();
-            categoryTitle.textContent = targetKey;
+        function renderCanvas() {
+            dataDisplayCanvas.innerHTML = ""; 
             
-            if (!masterDatabase[targetKey] || masterDatabase[targetKey].length === 0) {
-                dataDisplayCanvas.innerHTML = `<p class="status-message">No content structures found in this category.</p>`;
+            if (masterDatabase.length === 0) {
+                dataDisplayCanvas.innerHTML = `<p class="status-message">No items found in the database.</p>`;
                 return;
             }
             
-            renderCanvas(masterDatabase[targetKey]);
-        }
+            masterDatabase.forEach((item, index) => {
+                // Initialize quantity tracking if not set
+                if (orderQuantities[index] === undefined) {
+                    orderQuantities[index] = 0;
+                }
 
-        function renderCanvas(records) {
-            dataDisplayCanvas.innerHTML = ""; // Clear active viewport
-            
-            records.forEach(item => {
                 const itemCard = document.createElement('div');
                 itemCard.className = 'data-item';
                 
                 itemCard.innerHTML = `
-                    <div class="data-item-front">${item.front}</div>
-                    <div class="data-item-back">${item.back}</div>
+                    <div class="data-item-details">
+                        <div class="data-item-name">${item.name}</div>
+                        <span class="data-item-price">${item.price.toLocaleString()} UGX</span>
+                        <span class="data-item-clarifier">${item.clarifier}</span>
+                    </div>
+                    <div class="quantity-controls">
+                        <button class="qty-btn" onclick="adjustQty(${index}, -1)">−</button>
+                        <input type="number" id="qty-${index}" class="qty-input" value="${orderQuantities[index]}" min="0" onchange="updateQtyField(${index}, this.value)">
+                        <button class="qty-btn" onclick="adjustQty(${index}, 1)">+</button>
+                    </div>
                 `;
                 
                 dataDisplayCanvas.appendChild(itemCard);
             });
+
+            calculateGrandTotal();
+        }
+
+        function adjustQty(index, change) {
+            const inputField = document.getElementById(`qty-${index}`);
+            let currentQty = parseInt(inputField.value) || 0;
+            let newQty = currentQty + change;
+            if (newQty < 0) newQty = 0;
+            
+            inputField.value = newQty;
+            orderQuantities[index] = newQty;
+            calculateGrandTotal();
+        }
+
+        function updateQtyField(index, value) {
+            let newQty = parseInt(value) || 0;
+            if (newQty < 0) newQty = 0;
+            
+            orderQuantities[index] = newQty;
+            calculateGrandTotal();
+        }
+
+        function calculateGrandTotal() {
+            let grandTotal = 0;
+            masterDatabase.forEach((item, index) => {
+                const qty = orderQuantities[index] || 0;
+                grandTotal += item.price * qty;
+            });
+            grandTotalDisplay.textContent = grandTotal.toLocaleString() + " UGX";
+        }
+
+        function sendWhatsAppReport() {
+            let reportLines = ["*MUKISA REQUEST ORDER* 📝\n"];
+            let runningTotal = 0;
+            let hasItems = false;
+
+            masterDatabase.forEach((item, index) => {
+                const qty = orderQuantities[index] || 0;
+                if (qty > 0) {
+                    hasItems = true;
+                    const lineCost = item.price * qty;
+                    runningTotal += lineCost;
+                    reportLines.push(`• *${item.name}*: ${qty} [${item.clarifier}]`);
+                }
+            });
+
+            if (!hasItems) {
+                alert("Please add at least one item quantity before sending a report.");
+                return;
+            }
+
+            reportLines.push(`\n*Grand Total: ${runningTotal.toLocaleString()} UGX*`);
+            
+            const compiledText = encodeURIComponent(reportLines.join("\n"));
+            const whatsappUrl = `https://api.whatsapp.com/send?text=${compiledText}`;
+            
+            window.open(whatsappUrl, '_blank');
         }
 
         window.addEventListener('DOMContentLoaded', loadMasterData);
 
-        
-        // Dynamic Namespace Isolation Block
+        // Dynamic Namespace Isolation Block preserved safely
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
-                // Dynamically computes the explicit subfolder namespace (e.g., "/Mukisa-Requester/")
                 const dynamicScope = window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/') + 1);
-
                 navigator.serviceWorker.register('./sw.js', { scope: dynamicScope })
                     .then((reg) => console.log('Service Worker registered with scope:', reg.scope))
                     .catch((err) => console.log('Service Worker registration failed:', err));
