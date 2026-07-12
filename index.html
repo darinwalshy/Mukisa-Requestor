@@ -277,6 +277,7 @@
     <script>
         let masterDatabase = [];
         let orderQuantities = {}; // Tracks { itemIndex: quantity }
+        let globalSupplierPhone = ""; // Stores the extracted WhatsApp phone destination
 
         const dataDisplayCanvas = document.getElementById('dataDisplayCanvas');
         const grandTotalDisplay = document.getElementById('grandTotalDisplay');
@@ -294,6 +295,9 @@
             } catch (error) {
                 console.log("Cloud stream offline. Checking local container...", error);
                 const storedData = localStorage.getItem('mukisa_requester_local_data');
+                const storedPhone = localStorage.getItem('mukisa_requester_supplier_phone');
+                
+                if (storedPhone) globalSupplierPhone = storedPhone;
                 
                 if (storedData) {
                     masterDatabase = JSON.parse(storedData);
@@ -306,6 +310,7 @@
 
         function parseAndStoreCSV(text) {
             masterDatabase = []; 
+            globalSupplierPhone = ""; 
             const rows = text.split(/[\r\n]+/);
             
             for (let i = 0; i < rows.length; i++) {
@@ -316,20 +321,25 @@
                 const columns = currentRow.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
                 if (columns.length < 2) continue; 
                 
-                const productName = columns[0].replace(/^"|"$/g, '').trim(); 
-                const rawPrice = columns[1].replace(/^"|"$/g, '').trim();
+                const firstCell = columns[0].replace(/^"|"$/g, '').trim(); 
+                const secondCell = columns[1].replace(/^"|"$/g, '').trim();
+                
+                // Check if this row holds our explicit phone configuration key
+                if (firstCell.toLowerCase() === 'supplier phone') {
+                    globalSupplierPhone = secondCell.replace(/[^0-9]/g, ''); // Extract digits only
+                    localStorage.setItem('mukisa_requester_supplier_phone', globalSupplierPhone);
+                    continue; 
+                }
+                
+                // Skip layout headers safely
+                if (firstCell.toLowerCase() === 'product name' || firstCell.toLowerCase() === 'product') continue;
+                
                 const clarifier = columns[2] ? columns[2].replace(/^"|"$/g, '').trim() : '';
-                
-                // Read Column 4 as the structural Unit text string. Fall back to empty safely.
                 const dynamicUnit = columns[3] ? columns[3].replace(/^"|"$/g, '').trim() : '';
-                
-                // Skip header row if matches exactly
-                if (productName.toLowerCase() === 'product name' || productName.toLowerCase() === 'product') continue;
-                
-                const priceNum = parseFloat(rawPrice.replace(/[^0-9.]/g, '')) || 0;
+                const priceNum = parseFloat(secondCell.replace(/[^0-9.]/g, '')) || 0;
                 
                 masterDatabase.push({ 
-                    name: productName, 
+                    name: firstCell, 
                     price: priceNum, 
                     clarifier: clarifier,
                     unit: dynamicUnit
@@ -418,7 +428,6 @@
                     const lineCost = item.price * qty;
                     runningTotal += lineCost;
                     
-                    // Appends unit descriptor string cleanly directly to the calculated quantity
                     const unitLabel = item.unit ? ` ${item.unit}` : "";
                     reportLines.push(`• *${item.name}* [${item.clarifier}]: ${qty}${unitLabel} — ${lineCost.toLocaleString()} UGX`);
                 }
@@ -432,7 +441,13 @@
             reportLines.push(`\n*Grand Total: ${runningTotal.toLocaleString()} UGX*`);
             
             const compiledText = encodeURIComponent(reportLines.join("\n"));
-            const whatsappUrl = `https://api.whatsapp.com/send?text=${compiledText}`;
+            
+            let whatsappUrl = "";
+            if (globalSupplierPhone) {
+                whatsappUrl = `https://api.whatsapp.com/send?phone=${globalSupplierPhone}&text=${compiledText}`;
+            } else {
+                whatsappUrl = `https://api.whatsapp.com/send?text=${compiledText}`;
+            }
             
             window.open(whatsappUrl, '_blank');
         }
