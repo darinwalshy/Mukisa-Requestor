@@ -324,6 +324,9 @@
                 const firstCell = columns[0].replace(/^"|"$/g, '').trim(); 
                 const secondCell = columns[1].replace(/^"|"$/g, '').trim();
                 
+                // Skip row entirely if the first cell (Product Name / Configuration Key) is completely empty
+                if (!firstCell) continue;
+                
                 // Check if this row holds our explicit phone configuration key
                 if (firstCell.toLowerCase() === 'supplier phone') {
                     globalSupplierPhone = secondCell.replace(/[^0-9]/g, ''); // Extract digits only
