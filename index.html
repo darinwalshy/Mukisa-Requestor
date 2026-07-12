@@ -145,7 +145,7 @@
         async function loadMasterData() {
             let rawText = "";
             try {
-                const cloudUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRpIlbRDo-NX3VAOUYsy8RVJGAKDIqyXLy5eTB1jnzd9TnMChnDphyUB3NRkSbo6w/pub?output=csv';
+                const cloudUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTHfrlPUELe3jPBi8Z4NK61zLn95lBR_b3uYPzvHnS6twmbYPkMzLcazF6KH9sTntzqyAP2ldxxzC5j/pub?output=csv';
                 
                 const response = await fetch(`${cloudUrl}&t=${new Date().getTime()}`);
                 if (!response.ok) throw new Error("Network response was not ok");
