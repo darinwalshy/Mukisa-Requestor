@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Boilerplate PWA</title>
+    <link rel="manifest" href="manifest.json">
+    <style>
+        /* Minimal, clean layout */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+        }
+
+        body {
+            background-color: #ffffff;
+            color: #1e293b;
+            padding: 40px 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        header {
+            width: 100%;
+            max-width: 600px;
+            margin-bottom: 30px;
+        }
+
+        h1 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 15px;
+        }
+
+        .selector-container {
+            width: 100%;
+        }
+
+        .category-select {
+            width: 100%;
+            padding: 12px;
+            font-size: 1rem;
+            border-radius: 8px;
+            border: 1px solid #cbd5e1;
+            background-color: #f8fafc;
+            color: #0f172a;
+            cursor: pointer;
+            outline: none;
+        }
+
+        main {
+            width: 100%;
+            max-width: 600px;
+            flex-grow: 1;
+        }
+
+        .category-title {
+            font-size: 1.4rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+            text-transform: capitalize;
+            border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 8px;
+        }
+
+        /* Clean data list canvas */
+        .data-list {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .data-item {
+            background-color: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 16px;
+        }
+
+        .data-item-front {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #0f172a;
+            margin-bottom: 4px;
+        }
+
+        .data-item-back {
+            font-size: 0.95rem;
+            color: #475569;
+        }
+
+        .status-message {
+            font-style: italic;
+            color: #64748b;
+        }
+
+        /* Minimal Version Badge */
+        footer {
+            width: 100%;
+            max-width: 600px;
+            text-align: center;
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #f1f5f9;
+            font-size: 0.85rem;
+            color: #94a3b8;
+            font-weight: 500;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>Data Engine Boilerplate</h1>
+        <div class="selector-container">
+            <select id="categorySelect" class="category-select" onchange="switchCategory(this.value)">
+                <option value="colors">🎨 Colors</option>
+                <option value="shapes">📐 Shapes</option>
+            </select>
+        </div>
+    </header>
+
+    <main>
+        <h2 id="categoryTitle" class="category-title">Loading...</h2>
+        <div id="dataDisplayCanvas" class="data-list">
+            <p class="status-message">Connecting to data stream...</p>
+        </div>
+    </main>
+
+    <footer>
+        App Version: v2.2-Canvas-Test
+    </footer>
+
+    <script>
+        let masterDatabase = {};
+
+        const categorySelect = document.getElementById('categorySelect');
+        const categoryTitle = document.getElementById('categoryTitle');
+        const dataDisplayCanvas = document.getElementById('dataDisplayCanvas');
+
+        async function loadMasterData() {
+            let rawText = "";
+            try {
+                const cloudUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRpIlbRDo-NX3VAOUYsy8RVJGAKDIqyXLy5eTB1jnzd9TnMChnDphyUB3NRkSbo6w/pub?output=csv';
+                
+                const response = await fetch(`${cloudUrl}&t=${new Date().getTime()}`);
+                if (!response.ok) throw new Error("Network response was not ok");
+                rawText = await response.text();
+                
+                parseAndStoreCSV(rawText);
+                
+            } catch (error) {
+                console.log("Cloud stream offline. Checking local container...", error);
+                const storedData = localStorage.getItem('framework_template_local_data');
+                
+                if (storedData) {
+                    masterDatabase = JSON.parse(storedData);
+                    instantiateCategorySelection();
+                } else {
+                    dataDisplayCanvas.innerHTML = `<p class="status-message">Offline: No cached data structures found.</p>`;
+                }
+            }
+        }
+
+        function parseAndStoreCSV(text) {
+            masterDatabase = {}; 
+            const rows = text.split(/[\r\n]+/);
+            
+            for (let i = 0; i < rows.length; i++) {
+                const currentRow = rows[i].trim();
+                if (!currentRow) continue; 
+                
+                const columns = currentRow.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
+                if (columns.length < 3) continue; 
+                
+                const rawCategory = columns[0].replace(/^"|"$/g, '').trim(); 
+                const category = rawCategory.toLowerCase();
+                
+                const frontValue = columns[1].replace(/^"|"$/g, '').trim();
+                const backValue = columns[2].replace(/^"|"$/g, '').trim();
+                
+                if (category === 'category') continue;
+                
+                if (!masterDatabase[category]) {
+                    masterDatabase[category] = [];
+                }
+                
+                masterDatabase[category].push({ 
+                    front: frontValue, 
+                    back: backValue 
+                });
+            }
+            
+            localStorage.setItem('framework_template_local_data', JSON.stringify(masterDatabase));
+            instantiateCategorySelection();
+        }
+
+        function instantiateCategorySelection() {
+            let currentSelection = categorySelect.value.toLowerCase();
+            if (masterDatabase[currentSelection]) {
+                switchCategory(currentSelection);
+            } else {
+                const fallback = Object.keys(masterDatabase)[0];
+                if (fallback) switchCategory(fallback);
+            }
+        }
+        
+        function switchCategory(categoryKey) {
+            const targetKey = categoryKey.toLowerCase();
+            categoryTitle.textContent = targetKey;
+            
+            if (!masterDatabase[targetKey] || masterDatabase[targetKey].length === 0) {
+                dataDisplayCanvas.innerHTML = `<p class="status-message">No content structures found in this category.</p>`;
+                return;
+            }
+            
+            renderCanvas(masterDatabase[targetKey]);
+        }
+
+        function renderCanvas(records) {
+            dataDisplayCanvas.innerHTML = ""; // Clear active viewport
+            
+            records.forEach(item => {
+                const itemCard = document.createElement('div');
+                itemCard.className = 'data-item';
+                
+                itemCard.innerHTML = `
+                    <div class="data-item-front">${item.front}</div>
+                    <div class="data-item-back">${item.back}</div>
+                `;
+                
+                dataDisplayCanvas.appendChild(itemCard);
+            });
+        }
+
+        window.addEventListener('DOMContentLoaded', loadMasterData);
+
+        
+        // Dynamic Namespace Isolation Block
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                // Dynamically computes the explicit subfolder namespace (e.g., "/Boilerplate/")
+                const dynamicScope = window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/') + 1);
+
+                navigator.serviceWorker.register('./sw.js', { scope: dynamicScope })
+                    .then((reg) => console.log('Boilerplate Service Worker registered with scope:', reg.scope))
+                    .catch((err) => console.log('Boilerplate Service Worker registration failed:', err));
+            });
+        }
+    </script>
+</body>
+</html>
