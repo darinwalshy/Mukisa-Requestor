@@ -570,6 +570,7 @@
         }
 
         function sendWhatsAppReport() {
+            // Clean header formatting with explicit spacing so WhatsApp markdown parses correctly
             let reportLines = ["*MUKISA REQUEST ORDER* 📝\n"];
             let runningTotal = 0;
             let hasItems = false;
@@ -582,7 +583,15 @@
                     runningTotal += lineCost;
                     
                     const unitLabel = item.unit ? ` ${item.unit}` : "";
-                    reportLines.push(`• *${item.name}* [${item.clarifier}]: ${qty}${unitLabel} — ${lineCost.toLocaleString()} UGX`);
+                    const clarifierLabel = item.clarifier ? ` [${item.clarifier}]` : "";
+                    
+                    // Format the item price nicely with commas (e.g., 11,000 UGX)
+                    const formattedUnitPrice = item.price.toLocaleString();
+                    const formattedLineCost = lineCost.toLocaleString();
+                    
+                    // Clean layout: Bullet points separated from bold markdown text cleanly
+                    // Includes item name, clarifier, quantity, unit price breakdown, and line subtotal
+                    reportLines.push(`• *${item.name}*${clarifierLabel}\n  ${qty}${unitLabel} × ${formattedUnitPrice} UGX = *${formattedLineCost} UGX*\n`);
                 }
             });
 
@@ -591,7 +600,8 @@
                 return;
             }
 
-            reportLines.push(`\n*Grand Total: ${runningTotal.toLocaleString()} UGX*`);
+            // Stripped trailing asterisks away from trailing punctuation to guarantee clean bold formatting targets
+            reportLines.push(`*Grand Total: ${runningTotal.toLocaleString()} UGX*`);
             
             const compiledText = encodeURIComponent(reportLines.join("\n"));
             
