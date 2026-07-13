@@ -65,6 +65,13 @@
             justify-content: space-between;
             align-items: center;
             box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+            transition: background-color 0.2s ease, border-color 0.2s ease;
+        }
+
+        /* Highlight style when item is actively selected */
+        .data-item.active-request {
+            background-color: #f0fdf4; /* Soft, clean mint green */
+            border-color: #bbf7d0;     /* Complimentary soft green border */
         }
 
         .data-item-details {
@@ -149,12 +156,25 @@
             margin: 0;
         }
 
-        .item-dynamic-unit {
+        /* Lower layout label section holding units and conditional sub-totals */
+        .quantity-info-row {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            padding: 0 4px;
             font-size: 0.8rem;
+        }
+
+        .item-dynamic-unit {
             font-weight: 700;
             text-transform: lowercase;
             color: #64748b;
-            padding-right: 6px;
+        }
+
+        .item-subtotal {
+            font-weight: 700;
+            color: #16a34a;
+            display: none; /* Controlled dynamically by JS updates */
         }
 
         .status-message {
@@ -333,7 +353,7 @@
                 </svg>
                 Send Report to Supplier (WhatsApp)
             </button>
-            <div class="version-badge">App Version: v2.0-LiveOnly</div>
+            <div class="version-badge">App Version: v2.1-Subtotals</div>
         </div>
     </div>
 
@@ -460,8 +480,12 @@
                     orderQuantities[index] = 0;
                 }
 
+                const currentQty = orderQuantities[index];
                 const itemCard = document.createElement('div');
-                itemCard.className = 'data-item';
+                
+                // Assign active class immediately if quantity loaded is greater than zero
+                itemCard.id = `item-card-${index}`;
+                itemCard.className = currentQty > 0 ? 'data-item active-request' : 'data-item';
                 
                 itemCard.innerHTML = `
                     <div class="data-item-details">
@@ -472,17 +496,45 @@
                     <div class="quantity-wrapper">
                         <div class="quantity-controls">
                             <button class="qty-btn" onclick="adjustQty(${index}, -1)">−</button>
-                            <input type="number" id="qty-${index}" class="qty-input" value="${orderQuantities[index]}" min="0" onchange="updateQtyField(${index}, this.value)">
+                            <input type="number" id="qty-${index}" class="qty-input" value="${currentQty}" min="0" onchange="updateQtyField(${index}, this.value)">
                             <button class="qty-btn" onclick="adjustQty(${index}, 1)">+</button>
                         </div>
-                        <span class="item-dynamic-unit">${item.unit}</span>
+                        <div class="quantity-info-row">
+                            <span class="item-dynamic-unit">${item.unit}</span>
+                            <span id="subtotal-${index}" class="item-subtotal"></span>
+                        </div>
                     </div>
                 `;
                 
                 dataDisplayCanvas.appendChild(itemCard);
+                
+                // Update specific visibility for subtotal numbers right after generation
+                refreshLocalItemRowUI(index, currentQty);
             });
 
             calculateGrandTotal();
+        }
+
+        // Updates row background colors and individual calculations dynamically without refreshing the whole page
+        function refreshLocalItemRowUI(index, qty) {
+            const cardElement = document.getElementById(`item-card-${index}`);
+            const subtotalElement = document.getElementById(`subtotal-${index}`);
+            
+            if (!cardElement || !subtotalElement) return;
+
+            if (qty > 0) {
+                cardElement.classList.add('active-request');
+                
+                const itemPrice = masterDatabase[index].price;
+                const calculatedSubtotal = itemPrice * qty;
+                
+                subtotalElement.textContent = `${calculatedSubtotal.toLocaleString()} UGX`;
+                subtotalElement.style.display = 'block';
+            } else {
+                cardElement.classList.remove('active-request');
+                subtotalElement.style.display = 'none';
+                subtotalElement.textContent = '';
+            }
         }
 
         function adjustQty(index, change) {
@@ -493,6 +545,8 @@
             
             inputField.value = newQty;
             orderQuantities[index] = newQty;
+            
+            refreshLocalItemRowUI(index, newQty);
             calculateGrandTotal();
         }
 
@@ -501,6 +555,8 @@
             if (newQty < 0) newQty = 0;
             
             orderQuantities[index] = newQty;
+            
+            refreshLocalItemRowUI(index, newQty);
             calculateGrandTotal();
         }
 
