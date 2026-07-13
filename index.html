@@ -353,7 +353,7 @@
                 </svg>
                 Send Order to Mukisa (WhatsApp)
             </button>
-            <div class="version-badge">App Version: v2.1-Subtotals</div>
+            <div class="version-badge">App Version: v2.2-CleanText</div>
         </div>
     </div>
 
@@ -570,8 +570,8 @@
         }
 
         function sendWhatsAppReport() {
-            // Clean header formatting - removed the notebook emoji and trailing newline issues
-            let reportLines = ["*MUKISA REQUEST ORDER*\n"];
+            // Completely removed all markdown asterisks for a clean plain-text layout
+            let reportLines = ["MUKISA REQUEST ORDER\n"];
             let runningTotal = 0;
             let hasItems = false;
 
@@ -588,10 +588,9 @@
                     const formattedUnitPrice = item.price.toLocaleString();
                     const formattedLineCost = lineCost.toLocaleString();
                     
-                    // Fixed Markdown: Kept the bold text block compact on a single line 
-                    // and dropped the item.clarifier text variable entirely
-                    reportLines.push(`• *${item.name}*`);
-                    reportLines.push(`  ${qty}${unitLabel} × ${formattedUnitPrice} UGX = *${formattedLineCost} UGX*\n`);
+                    // Plain text layout with no markdown formatting characters
+                    reportLines.push(`• ${item.name}`);
+                    reportLines.push(`  ${qty}${unitLabel} × ${formattedUnitPrice} UGX = ${formattedLineCost} UGX\n`);
                 }
             });
 
@@ -600,8 +599,8 @@
                 return;
             }
 
-            // Clean grand total line bounds to ensure clean delivery
-            reportLines.push(`*Grand Total: ${runningTotal.toLocaleString()} UGX*`);
+            // Plain text grand total line
+            reportLines.push(`Grand Total: ${runningTotal.toLocaleString()} UGX`);
             
             const compiledText = encodeURIComponent(reportLines.join("\n"));
             
