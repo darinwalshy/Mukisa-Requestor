@@ -570,8 +570,8 @@
         }
 
         function sendWhatsAppReport() {
-            // Clean header formatting with explicit spacing so WhatsApp markdown parses correctly
-            let reportLines = ["*MUKISA REQUEST ORDER* 📝\n"];
+            // Clean header formatting - removed the notebook emoji and trailing newline issues
+            let reportLines = ["*MUKISA REQUEST ORDER*\n"];
             let runningTotal = 0;
             let hasItems = false;
 
@@ -583,15 +583,15 @@
                     runningTotal += lineCost;
                     
                     const unitLabel = item.unit ? ` ${item.unit}` : "";
-                    const clarifierLabel = item.clarifier ? ` [${item.clarifier}]` : "";
                     
-                    // Format the item price nicely with commas (e.g., 11,000 UGX)
+                    // Format prices with clean thousands separators
                     const formattedUnitPrice = item.price.toLocaleString();
                     const formattedLineCost = lineCost.toLocaleString();
                     
-                    // Clean layout: Bullet points separated from bold markdown text cleanly
-                    // Includes item name, clarifier, quantity, unit price breakdown, and line subtotal
-                    reportLines.push(`• *${item.name}*${clarifierLabel}\n  ${qty}${unitLabel} × ${formattedUnitPrice} UGX = *${formattedLineCost} UGX*\n`);
+                    // Fixed Markdown: Kept the bold text block compact on a single line 
+                    // and dropped the item.clarifier text variable entirely
+                    reportLines.push(`• *${item.name}*`);
+                    reportLines.push(`  ${qty}${unitLabel} × ${formattedUnitPrice} UGX = *${formattedLineCost} UGX*\n`);
                 }
             });
 
@@ -600,7 +600,7 @@
                 return;
             }
 
-            // Stripped trailing asterisks away from trailing punctuation to guarantee clean bold formatting targets
+            // Clean grand total line bounds to ensure clean delivery
             reportLines.push(`*Grand Total: ${runningTotal.toLocaleString()} UGX*`);
             
             const compiledText = encodeURIComponent(reportLines.join("\n"));
