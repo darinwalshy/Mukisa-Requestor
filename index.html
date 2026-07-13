@@ -242,9 +242,72 @@
             text-align: center;
             margin-top: 5px;
         }
+
+        /* Full-Screen Offline Overlay Styling */
+        #offlineOverlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(30, 41, 59, 0.98); /* Deep slate match with heavy opacity */
+            color: #ffffff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999; /* Absolute highest layer over elements */
+            padding: 30px;
+            text-align: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+
+        #offlineOverlay.visible {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .overlay-card {
+            max-width: 450px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .overlay-icon {
+            font-size: 3.5rem;
+            animation: pulse 2s infinite alternate;
+        }
+
+        .overlay-title {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: #f8fafc;
+        }
+
+        .overlay-text {
+            font-size: 1rem;
+            line-height: 1.6;
+            color: #cbd5e1;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); opacity: 0.8; }
+            100% { transform: scale(1.08); opacity: 1; }
+        }
     </style>
 </head>
 <body>
+
+    <!-- Full-Screen Offline Overlay Container -->
+    <div id="offlineOverlay">
+        <div class="overlay-card">
+            <div class="overlay-icon">📡</div>
+            <div class="overlay-title">Connection Needed</div>
+            <p class="overlay-text">Mukisa Requester requires an active internet connection to load live prices and send WhatsApp reports. Please check your network or move to an area with better signal.</p>
+        </div>
+    </div>
 
     <header>
         <h1>Mukisa Requester</h1>
@@ -270,7 +333,7 @@
                 </svg>
                 Send Report to Supplier (WhatsApp)
             </button>
-            <div class="version-badge">App Version: v1.2-LabeledUnits</div>
+            <div class="version-badge">App Version: v2.0-LiveOnly</div>
         </div>
     </div>
 
@@ -278,37 +341,52 @@
         let masterDatabase = [];
         let orderQuantities = {}; // Tracks { itemIndex: quantity }
         let globalSupplierPhone = ""; // Stores the extracted WhatsApp phone destination
+        let lastFetchTime = 0; // Tracks timestamps to throttle excessive refetching
 
         const dataDisplayCanvas = document.getElementById('dataDisplayCanvas');
         const grandTotalDisplay = document.getElementById('grandTotalDisplay');
+        const offlineOverlay = document.getElementById('offlineOverlay');
+
+        // Manage connection overlay and live fetch cycles
+        function evaluateNetworkStatus() {
+            if (!navigator.onLine) {
+                offlineOverlay.classList.add('visible');
+            } else {
+                offlineOverlay.classList.remove('visible');
+                // Auto-refresh immediately when connection is established/restored
+                loadMasterData();
+            }
+        }
 
         async function loadMasterData() {
+            // Guard clause: Avoid fetching if completely offline
+            if (!navigator.onLine) {
+                evaluateNetworkStatus();
+                return;
+            }
+
             try {
                 const cloudUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTHfrlPUELe3jPBi8Z4NK61zLn95lBR_b3uYPzvHnS6twmbYPkMzLcazF6KH9sTntzqyAP2ldxxzC5j/pub?output=csv';
                 
+                // Show loading message only if it's the very first load or canvas is empty
+                if (masterDatabase.length === 0) {
+                    dataDisplayCanvas.innerHTML = `<p class="status-message">Connecting to data stream...</p>`;
+                }
+
                 const response = await fetch(`${cloudUrl}&t=${new Date().getTime()}`);
                 if (!response.ok) throw new Error("Network response was not ok");
                 const rawText = await response.text();
                 
-                parseAndStoreCSV(rawText);
+                parseCSV(rawText);
+                lastFetchTime = Date.now(); // Track successful sync time
                 
             } catch (error) {
-                console.log("Cloud stream offline. Checking local container...", error);
-                const storedData = localStorage.getItem('mukisa_requester_local_data');
-                const storedPhone = localStorage.getItem('mukisa_requester_supplier_phone');
-                
-                if (storedPhone) globalSupplierPhone = storedPhone;
-                
-                if (storedData) {
-                    masterDatabase = JSON.parse(storedData);
-                    renderCanvas();
-                } else {
-                    dataDisplayCanvas.innerHTML = `<p class="status-message">Offline: No cached data structures found.</p>`;
-                }
+                console.error("Cloud stream retrieval failed:", error);
+                dataDisplayCanvas.innerHTML = `<p class="status-message" style="color: #ef4444;">Unable to load streaming data. Please try again shortly.</p>`;
             }
         }
 
-        function parseAndStoreCSV(text) {
+        function parseCSV(text) {
             masterDatabase = []; 
             globalSupplierPhone = ""; 
             const rows = text.split(/[\r\n]+/);
@@ -324,17 +402,16 @@
                 const firstCell = columns[0].replace(/^"|"$/g, '').trim(); 
                 const secondCell = columns[1].replace(/^"|"$/g, '').trim();
                 
-                // Skip row entirely if the first cell (Product Name / Configuration Key) is completely empty
+                // Skip row entirely if the product name key is empty
                 if (!firstCell) continue;
                 
-                // Check if this row holds our explicit phone configuration key
+                // Check for dynamic phone configuration key
                 if (firstCell.toLowerCase() === 'supplier phone') {
-                    globalSupplierPhone = secondCell.replace(/[^0-9]/g, ''); // Extract digits only
-                    localStorage.setItem('mukisa_requester_supplier_phone', globalSupplierPhone);
+                    globalSupplierPhone = secondCell.replace(/[^0-9]/g, ''); // Digits only
                     continue; 
                 }
                 
-                // Skip layout headers safely
+                // Skip headers
                 if (firstCell.toLowerCase() === 'product name' || firstCell.toLowerCase() === 'product') continue;
                 
                 const clarifier = columns[2] ? columns[2].replace(/^"|"$/g, '').trim() : '';
@@ -349,7 +426,6 @@
                 });
             }
             
-            localStorage.setItem('mukisa_requester_local_data', JSON.stringify(masterDatabase));
             renderCanvas();
         }
 
@@ -362,6 +438,7 @@
             }
             
             masterDatabase.forEach((item, index) => {
+                // Keep pre-existing entered quantities safely intact when re-rendering canvas on live updates
                 if (orderQuantities[index] === undefined) {
                     orderQuantities[index] = 0;
                 }
@@ -455,8 +532,31 @@
             window.open(whatsappUrl, '_blank');
         }
 
-        window.addEventListener('DOMContentLoaded', loadMasterData);
+        // Live Visibility Refetch Automation (Smart background sync strategy)
+        function handleBackgroundSyncTriggers() {
+            // Guard clause: Only check data sync if app is visible and actively connected
+            if (document.visibilityState === 'visible' && navigator.onLine) {
+                const fiveMinutes = 5 * 60 * 1000;
+                // Throttles updates to occur only if it has been at least 5 minutes since the last live fetch
+                if (Date.now() - lastFetchTime > fiveMinutes) {
+                    console.log("App pulled forward out of background. Executing fresh master fetch.");
+                    loadMasterData();
+                }
+            }
+        }
 
+        // State listeners tracking hardware environments and connectivity states
+        window.addEventListener('online', evaluateNetworkStatus);
+        window.addEventListener('offline', evaluateNetworkStatus);
+        document.addEventListener('visibilitychange', handleBackgroundSyncTriggers);
+        window.addEventListener('focus', handleBackgroundSyncTriggers);
+
+        // Initial launch runtime setup
+        window.addEventListener('DOMContentLoaded', () => {
+            evaluateNetworkStatus(); // Ensures screen safety barrier catches initial launch state
+        });
+
+        // Service Worker operational check (App shell distribution structure only)
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
                 const dynamicScope = window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/') + 1);
