@@ -365,24 +365,41 @@
                 return;
             }
 
-            try {
-                const cloudUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTHfrlPUELe3jPBi8Z4NK61zLn95lBR_b3uYPzvHnS6twmbYPkMzLcazF6KH9sTntzqyAP2ldxxzC5j/pub?output=csv';
-                
-                // Show loading message only if it's the very first load or canvas is empty
-                if (masterDatabase.length === 0) {
-                    dataDisplayCanvas.innerHTML = `<p class="status-message">Connecting to data stream...</p>`;
-                }
+            const maxRetries = 3;
+            let attempt = 0;
+            let delay = 1000; // 1-second buffer loop to allow cellular modems to complete handshake initialization
 
-                const response = await fetch(`${cloudUrl}&t=${new Date().getTime()}`);
-                if (!response.ok) throw new Error("Network response was not ok");
-                const rawText = await response.text();
-                
-                parseCSV(rawText);
-                lastFetchTime = Date.now(); // Track successful sync time
-                
-            } catch (error) {
-                console.error("Cloud stream retrieval failed:", error);
-                dataDisplayCanvas.innerHTML = `<p class="status-message" style="color: #ef4444;">Unable to load streaming data. Please try again shortly.</p>`;
+            while (attempt < maxRetries) {
+                try {
+                    const cloudUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTHfrlPUELe3jPBi8Z4NK61zLn95lBR_b3uYPzvHnS6twmbYPkMzLcazF6KH9sTntzqyAP2ldxxzC5j/pub?output=csv';
+                    
+                    // Show loading message only if it's the very first load or canvas is empty
+                    if (masterDatabase.length === 0) {
+                        dataDisplayCanvas.innerHTML = `<p class="status-message">Connecting to data stream...</p>`;
+                    }
+
+                    const response = await fetch(`${cloudUrl}&t=${new Date().getTime()}`);
+                    if (!response.ok) throw new Error("Network response was not ok");
+                    const rawText = await response.text();
+                    
+                    parseCSV(rawText);
+                    lastFetchTime = Date.now(); // Track successful sync time
+                    return; // Success! Exit the retry cycle loop early.
+                    
+                } catch (error) {
+                    attempt++;
+                    console.warn(`Fetch attempt ${attempt} failed. Device network connection stabilization pending...`, error);
+                    
+                    if (attempt >= maxRetries) {
+                        // All automatic retries exhausted - safely display the UI fallback
+                        console.error("Cloud stream retrieval failed definitively after retries:", error);
+                        dataDisplayCanvas.innerHTML = `<p class="status-message" style="color: #ef4444;">Unable to load streaming data. Please try again shortly.</p>`;
+                    } else {
+                        // Wait a step before attempting the next retrieval pass
+                        await new Promise(resolve => setTimeout(resolve, delay));
+                        delay *= 1.5; // Escalate delays dynamically to allow modem buffers to clear
+                    }
+                }
             }
         }
 
