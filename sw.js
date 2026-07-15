@@ -3,7 +3,7 @@
 // ==========================================
 const APP_PREFIX = 'mukisa_requester_v2.1_'; // Changed to isolate cache structures
 const CACHE_NAME = APP_PREFIX + 'cache';
-const REPO_NAME = '/Mukisa-Requester';     // Changed to match your exact GitHub repository name
+const REPO_NAME = '/Mukisa-Requestor';     // Changed to match your exact GitHub repository name
 
 const ASSETS = [
   `${REPO_NAME}/`,
