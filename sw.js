@@ -1,7 +1,7 @@
 // ==========================================
 // 🛠️ UNIQUE IDENTIFIERS FOR THIS APP
 // ==========================================
-const APP_PREFIX = 'mukisa_requester_v2_'; // Changed to isolate cache structures
+const APP_PREFIX = 'mukisa_requester_v2.1_'; // Changed to isolate cache structures
 const CACHE_NAME = APP_PREFIX + 'cache';
 const REPO_NAME = '/Mukisa-Requester';     // Changed to match your exact GitHub repository name
 
