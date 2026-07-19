@@ -7,3 +7,5 @@
 - [ ] Add onto the interface the spreadsheet number that has been downloaded
 - [ ] And into the outbound message the user number, spreadsheet number, date of last refresh of the app
 - [ ] Remove the install on the phone functionality that came along with the icon
+Currently the code is broken in regard to icons. I've changed the filename link in the manifest. This means that the PWA can't be "installed",
+This is what we want but it's a bit clunky.
