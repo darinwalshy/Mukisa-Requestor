@@ -84,7 +84,7 @@
         }
 
         .data-item-details {
-            flex-grow: 1;
+            box-grow: 1;
             padding-right: 10px;
         }
 
@@ -641,6 +641,12 @@
         window.addEventListener('offline', evaluateNetworkStatus);
         document.addEventListener('visibilitychange', handleBackgroundSyncTriggers);
         window.addEventListener('focus', handleBackgroundSyncTriggers);
+
+        // Intercept and block the automatic native browser PWA install prompt
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            console.log('Mukisa Requester: Native PWA installation blocked.');
+        });
 
         // Initial launch runtime setup
         window.addEventListener('DOMContentLoaded', () => {
