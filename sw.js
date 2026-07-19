@@ -1,7 +1,7 @@
 // ==========================================
 // 🛠️ UNIQUE IDENTIFIERS FOR THIS APP
 // ==========================================
-const APP_PREFIX = 'mukisa_requester_v2.33_'; // Bumped version to force cache updates
+const APP_PREFIX = 'mukisa_requester_v2.34_'; // Bumped version to force cache updates
 const CACHE_NAME = APP_PREFIX + 'cache';
 // Double-check: Make sure this matches your exact GitHub repo casing/spelling (-Requestor vs -Requester)
 const REPO_NAME = '/Mukisa-Requestor';      
