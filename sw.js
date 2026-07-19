@@ -1,9 +1,10 @@
 // ==========================================
 // 🛠️ UNIQUE IDENTIFIERS FOR THIS APP
 // ==========================================
-const APP_PREFIX = 'mukisa_requester_v2.32_'; // Bumped version to force cache updates
+const APP_PREFIX = 'mukisa_requester_v2.33_'; // Bumped version to force cache updates
 const CACHE_NAME = APP_PREFIX + 'cache';
-const REPO_NAME = '/Mukisa-Requestor';      // Matches your exact GitHub repository name
+// Double-check: Make sure this matches your exact GitHub repo casing/spelling (-Requestor vs -Requester)
+const REPO_NAME = '/Mukisa-Requestor';      
 
 const ASSETS = [
   `${REPO_NAME}/`,
@@ -27,9 +28,8 @@ self.addEventListener('activate', (event) => {
     caches.keys().then((keys) => {
       return Promise.all(
         keys.map((key) => {
-          // FIX: Match the core identifier so older versions (like v2.3_) are deleted,
-          // but ensure we don't delete our brand new current CACHE_NAME.
-          if (key.startsWith('mukisa_requester_') && key !== CACHE_NAME) {
+          // TIGHTENED: Matches 'mukisa_requester_v' to ensure absolute isolation from other future Mukisa sub-apps
+          if (key.startsWith('mukisa_requester_v') && key !== CACHE_NAME) {
             console.log(`[Service Worker] Cleared old app cache: ${key}`);
             return caches.delete(key);
           }
