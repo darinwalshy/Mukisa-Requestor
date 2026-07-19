@@ -2,7 +2,7 @@
   "name": "Mukisa Requester",
   "short_name": "Mukisa",
   "start_url": "./index.html",
-  "display": "minimal-ui",
+  "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#1e293b",
   "orientation": "portrait",
