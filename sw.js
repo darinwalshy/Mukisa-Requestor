@@ -1,9 +1,9 @@
 // ==========================================
 // 🛠️ UNIQUE IDENTIFIERS FOR THIS APP
 // ==========================================
-const APP_PREFIX = 'mukisa_requester_v2.3_'; // Changed to isolate cache structures
+const APP_PREFIX = 'mukisa_requester_v2.31_'; // Bumped version to force cache updates
 const CACHE_NAME = APP_PREFIX + 'cache';
-const REPO_NAME = '/Mukisa-Requestor';     // Changed to match your exact GitHub repository name
+const REPO_NAME = '/Mukisa-Requestor';      // Matches your exact GitHub repository name
 
 const ASSETS = [
   `${REPO_NAME}/`,
@@ -21,14 +21,15 @@ self.addEventListener('install', (event) => {
   );
 });
 
-// Activate event: SAFELY selectively filters caches
+// Activate event: SAFELY selectively filters and purges previous versions
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((keys) => {
       return Promise.all(
         keys.map((key) => {
-          // CRITICAL FIX: Only delete caches belonging to THIS specific app prefix
-          if (key.startsWith(APP_PREFIX) && key !== CACHE_NAME) {
+          // FIX: Match the core identifier so older versions (like v2.3_) are deleted,
+          // but ensure we don't delete our brand new current CACHE_NAME.
+          if (key.startsWith('mukisa_requester_') && key !== CACHE_NAME) {
             console.log(`[Service Worker] Cleared old app cache: ${key}`);
             return caches.delete(key);
           }
@@ -38,11 +39,16 @@ self.addEventListener('activate', (event) => {
   );
 });
 
-// Fetch event: STRICT SCOPED NETWORK FIRST with immediate cache fallback
+// Fetch event: BOUNDED NETWORK FIRST with spreadsheet bypass
 self.addEventListener('fetch', (event) => {
   const requestUrl = event.request.url;
 
-  // Strict local boundary check: Origin matching AND explicit repository subfolder isolation
+  // 1. CRITICAL BYPASS: Do not cache or intercept cloud spreadsheet API / Apps Script data
+  if (requestUrl.includes('script.google.com') || requestUrl.includes('sheets.googleapis.com')) {
+    return; // Let the browser handle the live network request normally
+  }
+
+  // 2. Strict local boundary check: Origin matching AND explicit repository subfolder isolation
   if (requestUrl.includes(self.location.origin) && requestUrl.includes(REPO_NAME)) {
     event.respondWith(
       fetch(event.request).catch(() => {
